@@ -7,15 +7,16 @@ import {
   ScrollView,
   Alert,
   ActivityIndicator,
+  Modal,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { Ionicons } from '@expo/vector-icons';
+import { Audio } from 'expo-av';
 import { useAuthStore } from '../store/authStore';
 import { useESP32Store } from '../store/esp32Store';
 import { calculateAQI, getHealthRecommendation } from '../utils/aqiCalculator';
-import { diseases } from '../constants/diseases';
 
 const EXPO_PUBLIC_BACKEND_URL = process.env.EXPO_PUBLIC_BACKEND_URL;
 
