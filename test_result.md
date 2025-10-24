@@ -116,66 +116,84 @@ backend:
       - working: true
         agent: "main"
         comment: "Implemented registration and login endpoints with bcrypt password hashing. Tested with curl - both endpoints working correctly."
+      - working: true
+        agent: "testing"
+        comment: "Comprehensive testing completed. Registration creates users with UUID, bcrypt password hashing works correctly. Login validates credentials properly and returns user data. Invalid login attempts correctly return 401 status. All authentication flows working as expected."
   
   - task: "Sensor Data Storage API"
     implemented: true
-    working: "NA"
+    working: true
     file: "/app/backend/server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
         comment: "Implemented POST /api/sensor-data and GET /api/sensor-data/{user_id} endpoints. Needs integration testing with frontend."
+      - working: true
+        agent: "testing"
+        comment: "Both endpoints tested successfully. POST /api/sensor-data accepts sensor readings with AQI calculation and location data, stores with UUID and timestamp. GET /api/sensor-data/{user_id} retrieves user-specific records correctly. Data validation working, returns empty array for non-existent users."
   
   - task: "Cough Recording API"
     implemented: true
-    working: "NA"
+    working: true
     file: "/app/backend/server.py"
     stuck_count: 0
     priority: "medium"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
         comment: "Implemented POST /api/cough-record and GET /api/cough-records/{user_id} endpoints. Ready for testing once ML model is integrated."
+      - working: true
+        agent: "testing"
+        comment: "API endpoints working correctly. POST /api/cough-record accepts audio data (base64), severity, cough type, and diagnosis. GET /api/cough-records/{user_id} retrieves user records properly. Note: ML analysis is placeholder - actual ML model integration needed for production."
   
   - task: "Oxygen Level API"
     implemented: true
-    working: "NA"
+    working: true
     file: "/app/backend/server.py"
     stuck_count: 0
     priority: "medium"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
         comment: "Implemented POST /api/oxygen-level and GET /api/oxygen-levels/{user_id} endpoints. Needs integration testing."
+      - working: true
+        agent: "testing"
+        comment: "Both endpoints tested and working. POST /api/oxygen-level saves oxygen readings with timestamp. GET /api/oxygen-levels/{user_id} retrieves user-specific oxygen level history. Data persistence and retrieval working correctly."
   
   - task: "History API"
     implemented: true
-    working: "NA"
+    working: true
     file: "/app/backend/server.py"
     stuck_count: 0
     priority: "medium"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
         comment: "Implemented GET /api/history/{user_id} endpoint. Returns sorted AQI readings."
+      - working: true
+        agent: "testing"
+        comment: "History API working correctly. GET /api/history/{user_id} returns user's AQI readings sorted by timestamp (most recent first). Includes location data when available. Proper data structure and sorting confirmed."
   
   - task: "Heat Map Data API"
     implemented: true
-    working: "NA"
+    working: true
     file: "/app/backend/server.py"
     stuck_count: 0
     priority: "low"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
         comment: "Implemented GET /api/heatmap-data endpoint. Returns all readings with location data."
+      - working: true
+        agent: "testing"
+        comment: "Heatmap API tested successfully. GET /api/heatmap-data returns all sensor readings with location coordinates for map visualization. Filters records to only include those with location data. Ready for frontend integration."
 
 frontend:
   - task: "Login/Signup Screen"
