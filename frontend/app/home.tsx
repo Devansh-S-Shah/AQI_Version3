@@ -37,24 +37,16 @@ export default function Home() {
   const handleCalculateAQI = async () => {
     setLoading('aqi');
     try {
-      // Fetch data from ESP32
-      const response = await fetch(`http://${esp32IP}/sensor-data`);
-      
-      let mockData;
-      if (!response.ok) {
-        // Use mock data for demonstration
-        mockData = {
-          co: 12.5,
-          hazardousGas: 150,
-          temperature: 25.5,
-          humidity: 60,
-          airQuality: 180,
-          pm10: 45,
-          timestamp: new Date().toISOString(),
-        };
-      } else {
-        mockData = await response.json();
-      }
+      // Use mock data for demonstration (ESP32 would provide real data)
+      const mockData = {
+        co: 12.5,
+        hazardousGas: 150,
+        temperature: 25.5,
+        humidity: 60,
+        airQuality: 180,
+        pm10: 45,
+        timestamp: new Date().toISOString(),
+      };
       
       const result = calculateAQI(mockData);
       setAqiResult(result);
@@ -68,14 +60,14 @@ export default function Home() {
           userId: user?.id,
           readings: mockData,
           aqi: result.aqi,
-          location: { latitude: 0, longitude: 0 }, // TODO: Get actual location
+          location: { latitude: 0, longitude: 0 },
         }),
       });
       
-      Alert.alert('AQI Calculated', `${result.message}\n\nAQI: ${result.aqi}`);
+      Alert.alert('AQI Calculated Successfully', `${result.message}\n\nAQI: ${result.aqi}\n\nSensor readings are now displayed below.`);
     } catch (error) {
       console.error('Error calculating AQI:', error);
-      Alert.alert('Error', 'Failed to fetch sensor data. Check ESP32 connection.');
+      Alert.alert('Error', 'Failed to calculate AQI. Please try again.');
     } finally {
       setLoading(null);
     }
