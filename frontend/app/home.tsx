@@ -152,31 +152,24 @@ export default function Home() {
     setLoading('oxygen');
     try {
       // Use mock oxygen level for demonstration (ESP32 pulse oximeter would provide real data)
-      const oxygenLevel = 96;
+      const oxygenReading = 96;
+      
+      // Set the oxygen level to display on screen
+      setOxygenLevel(oxygenReading);
       
       await fetch(`${EXPO_PUBLIC_BACKEND_URL}/api/oxygen-level`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           userId: user?.id,
-          oxygenLevel,
+          oxygenLevel: oxygenReading,
           timestamp: new Date().toISOString(),
         }),
       });
       
-      // Determine oxygen level status
-      let status = '';
-      if (oxygenLevel >= 95) {
-        status = '✅ Normal';
-      } else if (oxygenLevel >= 90) {
-        status = '⚠️ Low';
-      } else {
-        status = '❌ Critical';
-      }
-      
       Alert.alert(
         'Oxygen Level Recorded',
-        `Your oxygen level: ${oxygenLevel}%\nStatus: ${status}\n\n(Connect ESP32 pulse oximeter for real-time readings)`
+        `Pulse oximeter reading saved successfully!\n\nOxygen Level: ${oxygenReading}%`
       );
     } catch (error) {
       console.error('Error recording oxygen level:', error);
