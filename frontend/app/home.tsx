@@ -594,6 +594,67 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
   },
+  // Oxygen level card styles
+  oxygenCard: {
+    backgroundColor: '#1A1E3B',
+    borderRadius: 16,
+    padding: 24,
+    marginBottom: 24,
+    borderWidth: 2,
+    borderColor: '#FF4444',
+  },
+  oxygenHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    marginBottom: 20,
+  },
+  oxygenTitle: {
+    fontSize: 20,
+    fontWeight: '600',
+    color: '#fff',
+  },
+  oxygenContent: {
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  oxygenValue: {
+    fontSize: 64,
+    fontWeight: 'bold',
+    color: '#FF4444',
+  },
+  oxygenLabel: {
+    fontSize: 16,
+    color: '#888',
+    marginTop: 4,
+  },
+  oxygenStatus: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    backgroundColor: '#0A0E27',
+    borderRadius: 8,
+    marginBottom: 16,
+  },
+  statusIndicator: {
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+  },
+  statusText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#fff',
+  },
+  oxygenNote: {
+    fontSize: 12,
+    color: '#888',
+    textAlign: 'center',
+    fontStyle: 'italic',
+  },
   // Sensor readings styles
   sensorCard: {
     backgroundColor: '#1A1E3B',
