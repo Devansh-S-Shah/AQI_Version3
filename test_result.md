@@ -302,8 +302,10 @@ test_plan:
   current_focus:
     - "Login/Signup Screen"
     - "Main Dashboard with AQI Display"
+    - "Navigation with Hamburger Menu"
+    - "All frontend pages"
   stuck_tasks: []
-  test_all: false
+  test_all: true
   test_priority: "high_first"
 
 agent_communication:
@@ -311,3 +313,5 @@ agent_communication:
     message: "Initial MVP implementation complete. All core features implemented with UI/UX. Backend uses in-memory storage (Firebase integration ready via provided config). ESP32 connection ready with IP placeholder. ML cough analysis placeholder implemented - needs actual model integration. Google Maps heat map implemented with API key placeholders. Comprehensive setup documentation provided in SETUP_INSTRUCTIONS.md. Ready for backend testing of authentication and API endpoints."
   - agent: "testing"
     message: "Backend testing completed successfully! All 6 backend API tasks tested and working correctly: ✅ User Authentication (Register/Login) - bcrypt hashing, proper validation ✅ Sensor Data Storage API - POST/GET with AQI data ✅ Cough Recording API - audio data storage with ML placeholder ✅ Oxygen Level API - readings storage and retrieval ✅ History API - sorted AQI readings ✅ Heat Map Data API - location-based data. Created comprehensive backend_test.py with 12 test cases, 100% success rate. Edge cases tested (invalid data validation, non-existent users). Backend is production-ready for frontend integration."
+  - agent: "main"
+    message: "Backend testing complete with 100% success rate. Now initiating comprehensive frontend UI testing. Will test: 1) Login/Signup screen with authentication flow, 2) Main dashboard with all 3 action buttons, 3) Hamburger menu navigation, 4) All pages (About, Heat Map, Profile, Settings, History), 5) Data display and user interactions. Testing on mobile dimensions for accurate results."
