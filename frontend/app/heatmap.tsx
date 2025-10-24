@@ -11,7 +11,23 @@ import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { Ionicons } from '@expo/vector-icons';
-import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
+import { Platform } from 'react-native';
+
+// Conditional import for react-native-maps (not available on web)
+let MapView: any = null;
+let Marker: any = null;
+let PROVIDER_GOOGLE: any = null;
+
+if (Platform.OS !== 'web') {
+  try {
+    const maps = require('react-native-maps');
+    MapView = maps.default;
+    Marker = maps.Marker;
+    PROVIDER_GOOGLE = maps.PROVIDER_GOOGLE;
+  } catch (error) {
+    console.log('react-native-maps not available');
+  }
+}
 import * as Location from 'expo-location';
 
 interface HeatMapData {
