@@ -271,6 +271,32 @@ export default function Home() {
           </View>
         )}
 
+        {/* Oxygen Level Display */}
+        {oxygenLevel !== null && (
+          <View style={styles.oxygenCard}>
+            <View style={styles.oxygenHeader}>
+              <Ionicons name="heart" size={32} color="#FF4444" />
+              <Text style={styles.oxygenTitle}>Blood Oxygen Level</Text>
+            </View>
+            <View style={styles.oxygenContent}>
+              <Text style={styles.oxygenValue}>{oxygenLevel}%</Text>
+              <Text style={styles.oxygenLabel}>SpO₂</Text>
+            </View>
+            <View style={styles.oxygenStatus}>
+              <View style={[
+                styles.statusIndicator,
+                { backgroundColor: oxygenLevel >= 95 ? '#00E400' : oxygenLevel >= 90 ? '#FFFF00' : '#FF4444' }
+              ]} />
+              <Text style={styles.statusText}>
+                {oxygenLevel >= 95 ? '✅ Normal Range' : oxygenLevel >= 90 ? '⚠️ Low' : '❌ Critical'}
+              </Text>
+            </View>
+            <Text style={styles.oxygenNote}>
+              From Pulse Oximeter Sensor (ESP32)
+            </Text>
+          </View>
+        )}
+
         {/* Sensor Readings Display */}
         {sensorReadings && (
           <View style={styles.sensorCard}>
