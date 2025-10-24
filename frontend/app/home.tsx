@@ -27,6 +27,12 @@ export default function Home() {
   const [loading, setLoading] = useState<string | null>(null);
   const [menuVisible, setMenuVisible] = useState(false);
   const [aqiResult, setAqiResult] = useState<any>(null);
+  const [sensorReadings, setSensorReadings] = useState<any>(null);
+  
+  // Cough recording modal state
+  const [coughModalVisible, setCoughModalVisible] = useState(false);
+  const [recording, setRecording] = useState<Audio.Recording | null>(null);
+  const [isRecording, setIsRecording] = useState(false);
 
   const handleCalculateAQI = async () => {
     setLoading('aqi');
@@ -34,9 +40,10 @@ export default function Home() {
       // Fetch data from ESP32
       const response = await fetch(`http://${esp32IP}/sensor-data`);
       
+      let mockData;
       if (!response.ok) {
         // Use mock data for demonstration
-        const mockData = {
+        mockData = {
           co: 12.5,
           hazardousGas: 150,
           temperature: 25.5,
@@ -45,67 +52,127 @@ export default function Home() {
           pm10: 45,
           timestamp: new Date().toISOString(),
         };
-        
-        const result = calculateAQI(mockData);
-        setAqiResult(result);
-        
-        // Save to backend
-        await fetch(`${EXPO_PUBLIC_BACKEND_URL}/api/sensor-data`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            userId: user?.id,
-            readings: mockData,
-            aqi: result.aqi,
-            location: { latitude: 0, longitude: 0 }, // TODO: Get actual location
-          }),
-        });
-        
-        Alert.alert('AQI Calculated', `${result.message}\n\nAQI: ${result.aqi}`);
+      } else {
+        mockData = await response.json();
       }
-    } catch (error) {
-      console.error('Error calculating AQI:', error);
-      Alert.alert('Error', 'Failed to fetch sensor data. Using mock data.');
-      
-      // Fallback to mock data
-      const mockData = {
-        co: 12.5,
-        hazardousGas: 150,
-        temperature: 25.5,
-        humidity: 60,
-        airQuality: 180,
-        pm10: 45,
-        timestamp: new Date().toISOString(),
-      };
       
       const result = calculateAQI(mockData);
       setAqiResult(result);
+      setSensorReadings(mockData);
+      
+      // Save to backend
+      await fetch(`${EXPO_PUBLIC_BACKEND_URL}/api/sensor-data`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userId: user?.id,
+          readings: mockData,
+          aqi: result.aqi,
+          location: { latitude: 0, longitude: 0 }, // TODO: Get actual location
+        }),
+      });
+      
+      Alert.alert('AQI Calculated', `${result.message}\n\nAQI: ${result.aqi}`);
+    } catch (error) {
+      console.error('Error calculating AQI:', error);
+      Alert.alert('Error', 'Failed to fetch sensor data. Check ESP32 connection.');
     } finally {
       setLoading(null);
     }
   };
 
-  const handleRecordCough = async () => {
-    setLoading('cough');
+  const startRecording = async () => {
     try {
-      // TODO: Implement audio recording and ML analysis
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      Alert.alert(
-        'Cough Recorded',
-        'Cough analysis will be implemented with ML model.\n\nPlaceholder: Medium severity detected.'
+      // Request microphone permissions
+      const permission = await Audio.requestPermissionsAsync();
+      if (permission.status !== 'granted') {
+        Alert.alert('Permission Required', 'Microphone access is needed to record cough.');
+        return;
+      }
+
+      await Audio.setAudioModeAsync({
+        allowsRecordingIOS: true,
+        playsInSilentModeIOS: true,
+      });
+
+      const { recording: newRecording } = await Audio.Recording.createAsync(
+        Audio.RecordingOptionsPresets.HIGH_QUALITY
       );
+      
+      setRecording(newRecording);
+      setIsRecording(true);
     } catch (error) {
-      Alert.alert('Error', 'Failed to record cough');
-    } finally {
-      setLoading(null);
+      console.error('Failed to start recording:', error);
+      Alert.alert('Error', 'Failed to start recording');
     }
+  };
+
+  const stopRecording = async () => {
+    if (!recording) return;
+    
+    setIsRecording(false);
+    await recording.stopAndUnloadAsync();
+    const uri = recording.getURI();
+    console.log('Recording saved to:', uri);
+  };
+
+  const saveCoughRecording = async () => {
+    if (!recording) {
+      Alert.alert('Error', 'No recording to save');
+      return;
+    }
+
+    try {
+      await stopRecording();
+      
+      // Save to backend (placeholder for ML analysis)
+      await fetch(`${EXPO_PUBLIC_BACKEND_URL}/api/cough-record`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userId: user?.id,
+          audioData: 'base64_audio_data_placeholder',
+          severity: 'moderate',
+          coughType: 'dry',
+          diagnosis: 'ML analysis placeholder - integrate TensorFlow Lite model',
+        }),
+      });
+
+      Alert.alert(
+        'Cough Recorded Successfully',
+        'Recording saved. ML analysis will be available after model integration.'
+      );
+      
+      setCoughModalVisible(false);
+      setRecording(null);
+    } catch (error) {
+      console.error('Error saving cough recording:', error);
+      Alert.alert('Error', 'Failed to save cough recording');
+    }
+  };
+
+  const handleRecordCough = () => {
+    setCoughModalVisible(true);
   };
 
   const handleRecordOxygen = async () => {
     setLoading('oxygen');
     try {
-      // Mock oxygen level - in real app, this would come from pulse oximeter
-      const oxygenLevel = 96;
+      // Fetch oxygen level from ESP32 pulse oximeter
+      const response = await fetch(`http://${esp32IP}/oxygen-level`);
+      
+      let oxygenLevel;
+      if (!response.ok) {
+        // Use mock data for demonstration
+        oxygenLevel = 96;
+        Alert.alert(
+          'ESP32 Connection',
+          'Could not connect to ESP32. Using mock data for demonstration.'
+        );
+      } else {
+        const data = await response.json();
+        oxygenLevel = data.oxygenLevel;
+      }
       
       await fetch(`${EXPO_PUBLIC_BACKEND_URL}/api/oxygen-level`, {
         method: 'POST',
@@ -117,9 +184,23 @@ export default function Home() {
         }),
       });
       
-      Alert.alert('Oxygen Level Recorded', `Your oxygen level: ${oxygenLevel}%`);
+      // Determine oxygen level status
+      let status = '';
+      if (oxygenLevel >= 95) {
+        status = '✅ Normal';
+      } else if (oxygenLevel >= 90) {
+        status = '⚠️ Low';
+      } else {
+        status = '❌ Critical';
+      }
+      
+      Alert.alert(
+        'Oxygen Level Recorded',
+        `Your oxygen level: ${oxygenLevel}%\nStatus: ${status}`
+      );
     } catch (error) {
-      Alert.alert('Error', 'Failed to record oxygen level');
+      console.error('Error recording oxygen level:', error);
+      Alert.alert('Error', 'Failed to fetch oxygen level from pulse oximeter');
     } finally {
       setLoading(null);
     }
