@@ -150,21 +150,8 @@ export default function Home() {
   const handleRecordOxygen = async () => {
     setLoading('oxygen');
     try {
-      // Fetch oxygen level from ESP32 pulse oximeter
-      const response = await fetch(`http://${esp32IP}/oxygen-level`);
-      
-      let oxygenLevel;
-      if (!response.ok) {
-        // Use mock data for demonstration
-        oxygenLevel = 96;
-        Alert.alert(
-          'ESP32 Connection',
-          'Could not connect to ESP32. Using mock data for demonstration.'
-        );
-      } else {
-        const data = await response.json();
-        oxygenLevel = data.oxygenLevel;
-      }
+      // Use mock oxygen level for demonstration (ESP32 pulse oximeter would provide real data)
+      const oxygenLevel = 96;
       
       await fetch(`${EXPO_PUBLIC_BACKEND_URL}/api/oxygen-level`, {
         method: 'POST',
@@ -188,11 +175,11 @@ export default function Home() {
       
       Alert.alert(
         'Oxygen Level Recorded',
-        `Your oxygen level: ${oxygenLevel}%\nStatus: ${status}`
+        `Your oxygen level: ${oxygenLevel}%\nStatus: ${status}\n\n(Connect ESP32 pulse oximeter for real-time readings)`
       );
     } catch (error) {
       console.error('Error recording oxygen level:', error);
-      Alert.alert('Error', 'Failed to fetch oxygen level from pulse oximeter');
+      Alert.alert('Error', 'Failed to record oxygen level. Please try again.');
     } finally {
       setLoading(null);
     }
