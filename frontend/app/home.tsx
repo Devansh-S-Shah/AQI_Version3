@@ -28,6 +28,7 @@ export default function Home() {
   const [menuVisible, setMenuVisible] = useState(false);
   const [aqiResult, setAqiResult] = useState<any>(null);
   const [sensorReadings, setSensorReadings] = useState<any>(null);
+  const [oxygenLevel, setOxygenLevel] = useState<number | null>(null);
   
   // Cough recording modal state
   const [coughModalVisible, setCoughModalVisible] = useState(false);
