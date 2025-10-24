@@ -369,4 +369,39 @@ const styles = StyleSheet.create({
     color: '#ccc',
     marginBottom: 4,
   },
+  webMapPlaceholder: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 24,
+    backgroundColor: '#1A1E3B',
+  },
+  webMapText: {
+    fontSize: 18,
+    color: '#fff',
+    marginTop: 16,
+    textAlign: 'center',
+  },
+  webMapSubtext: {
+    fontSize: 14,
+    color: '#888',
+    marginTop: 8,
+    marginBottom: 24,
+    textAlign: 'center',
+  },
+  dataPoint: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 8,
+    gap: 12,
+  },
+  dataPointColor: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+  },
+  dataPointText: {
+    fontSize: 14,
+    color: '#ccc',
+  },
 });
