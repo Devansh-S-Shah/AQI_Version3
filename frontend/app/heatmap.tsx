@@ -129,35 +129,60 @@ export default function HeatMap() {
         </View>
       ) : location ? (
         <View style={styles.mapContainer}>
-          <MapView
-            style={styles.map}
-            provider={PROVIDER_GOOGLE}
-            initialRegion={location}
-            showsUserLocation
-            showsMyLocationButton
-          >
-            {heatMapData.map((data, index) => (
-              <Marker
-                key={index}
-                coordinate={{
-                  latitude: data.latitude,
-                  longitude: data.longitude,
-                }}
-                pinColor={data.color}
-              >
-                <View style={styles.markerContainer}>
+          {Platform.OS !== 'web' && MapView ? (
+            <MapView
+              style={styles.map}
+              provider={PROVIDER_GOOGLE}
+              initialRegion={location}
+              showsUserLocation
+              showsMyLocationButton
+            >
+              {heatMapData.map((data, index) => (
+                <Marker
+                  key={index}
+                  coordinate={{
+                    latitude: data.latitude,
+                    longitude: data.longitude,
+                  }}
+                  pinColor={data.color}
+                >
+                  <View style={styles.markerContainer}>
+                    <View
+                      style={[
+                        styles.markerCircle,
+                        { backgroundColor: data.color },
+                      ]}
+                    >
+                      <Text style={styles.markerText}>{data.aqi}</Text>
+                    </View>
+                  </View>
+                </Marker>
+              ))}
+            </MapView>
+          ) : (
+            <View style={styles.webMapPlaceholder}>
+              <Ionicons name="map-outline" size={64} color="#4A90E2" />
+              <Text style={styles.webMapText}>
+                Map view is available on mobile devices
+              </Text>
+              <Text style={styles.webMapSubtext}>
+                Heat map data points: {heatMapData.length} locations
+              </Text>
+              {heatMapData.map((data, index) => (
+                <View key={index} style={styles.dataPoint}>
                   <View
                     style={[
-                      styles.markerCircle,
+                      styles.dataPointColor,
                       { backgroundColor: data.color },
                     ]}
-                  >
-                    <Text style={styles.markerText}>{data.aqi}</Text>
-                  </View>
+                  />
+                  <Text style={styles.dataPointText}>
+                    AQI: {data.aqi} at {data.latitude.toFixed(4)}, {data.longitude.toFixed(4)}
+                  </Text>
                 </View>
-              </Marker>
-            ))}
-          </MapView>
+              ))}
+            </View>
+          )}
 
           {/* Legend */}
           <View style={styles.legend}>
