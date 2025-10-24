@@ -298,25 +298,113 @@ export default function Home() {
           </View>
         )}
 
-        {/* Disease Information */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Related Health Information</Text>
-          {diseases.slice(0, 2).map((disease) => (
-            <View key={disease.id} style={styles.diseaseCard}>
-              <Text style={styles.diseaseName}>{disease.name}</Text>
-              <Text style={styles.diseaseDescription}>
-                {disease.description}
-              </Text>
-              <Text style={styles.diseaseSubtitle}>Key Symptoms:</Text>
-              {disease.symptoms.slice(0, 3).map((symptom, idx) => (
-                <Text key={idx} style={styles.diseaseItem}>
-                  • {symptom}
-                </Text>
-              ))}
+        {/* Sensor Readings Display */}
+        {sensorReadings && (
+          <View style={styles.sensorCard}>
+            <Text style={styles.sensorTitle}>Sensor Readings</Text>
+            <View style={styles.sensorGrid}>
+              <View style={styles.sensorItem}>
+                <Ionicons name="cloud-outline" size={24} color="#4A90E2" />
+                <Text style={styles.sensorLabel}>CO Level</Text>
+                <Text style={styles.sensorValue}>{sensorReadings.co} ppm</Text>
+              </View>
+              
+              <View style={styles.sensorItem}>
+                <Ionicons name="warning-outline" size={24} color="#FF7E00" />
+                <Text style={styles.sensorLabel}>Hazardous Gas</Text>
+                <Text style={styles.sensorValue}>{sensorReadings.hazardousGas} ppm</Text>
+              </View>
+              
+              <View style={styles.sensorItem}>
+                <Ionicons name="thermometer-outline" size={24} color="#00E400" />
+                <Text style={styles.sensorLabel}>Temperature</Text>
+                <Text style={styles.sensorValue}>{sensorReadings.temperature}°C</Text>
+              </View>
+              
+              <View style={styles.sensorItem}>
+                <Ionicons name="water-outline" size={24} color="#4A90E2" />
+                <Text style={styles.sensorLabel}>Humidity</Text>
+                <Text style={styles.sensorValue}>{sensorReadings.humidity}%</Text>
+              </View>
+              
+              <View style={styles.sensorItem}>
+                <Ionicons name="leaf-outline" size={24} color="#00E400" />
+                <Text style={styles.sensorLabel}>Air Quality</Text>
+                <Text style={styles.sensorValue}>{sensorReadings.airQuality}</Text>
+              </View>
+              
+              <View style={styles.sensorItem}>
+                <Ionicons name="analytics-outline" size={24} color="#8F3F97" />
+                <Text style={styles.sensorLabel}>PM10</Text>
+                <Text style={styles.sensorValue}>{sensorReadings.pm10} µg/m³</Text>
+              </View>
             </View>
-          ))}
-        </View>
+          </View>
+        )}
       </ScrollView>
+
+      {/* Cough Recording Modal */}
+      <Modal
+        visible={coughModalVisible}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setCoughModalVisible(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Record Cough</Text>
+            <Text style={styles.modalSubtitle}>
+              Press the microphone button to start recording
+            </Text>
+            
+            <TouchableOpacity
+              style={[
+                styles.recordButton,
+                isRecording && styles.recordButtonActive,
+              ]}
+              onPress={isRecording ? stopRecording : startRecording}
+            >
+              <Ionicons
+                name={isRecording ? 'stop-circle' : 'mic'}
+                size={64}
+                color="#fff"
+              />
+            </TouchableOpacity>
+            
+            {isRecording && (
+              <Text style={styles.recordingText}>Recording...</Text>
+            )}
+            
+            {recording && !isRecording && (
+              <Text style={styles.readyText}>✓ Recording ready to save</Text>
+            )}
+            
+            <View style={styles.modalButtons}>
+              <TouchableOpacity
+                style={styles.modalButtonCancel}
+                onPress={() => {
+                  setRecording(null);
+                  setIsRecording(false);
+                  setCoughModalVisible(false);
+                }}
+              >
+                <Text style={styles.modalButtonText}>Cancel</Text>
+              </TouchableOpacity>
+              
+              <TouchableOpacity
+                style={[
+                  styles.modalButtonSave,
+                  !recording && styles.modalButtonDisabled,
+                ]}
+                onPress={saveCoughRecording}
+                disabled={!recording}
+              >
+                <Text style={styles.modalButtonTextSave}>Save</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
 
       {/* Action Buttons */}
       <View style={styles.buttonContainer}>
