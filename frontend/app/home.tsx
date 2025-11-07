@@ -81,7 +81,7 @@ export default function Home() {
         '✅ AQI Calculated!', 
         `${result.message}\n\nAQI: ${result.aqi}\n\nReal sensor data from ESP32 displayed below.`
       );
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error fetching from ESP32:', error);
       Alert.alert(
         'ESP32 Connection Error', 
