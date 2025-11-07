@@ -27,8 +27,12 @@ export default function Settings() {
     // Basic IP validation
     const ipRegex = /^(\d{1,3}\.){3}\d{1,3}$/;
     if (ipRegex.test(ipInput)) {
+      console.log('Saving ESP32 IP:', ipInput);
       setESP32IP(ipInput);
-      Alert.alert('Success', 'ESP32 IP address saved successfully');
+      Alert.alert(
+        'Success', 
+        `ESP32 IP address saved successfully!\n\nIP: ${ipInput}\n\nPlease restart the app for changes to take effect.`
+      );
     } else {
       Alert.alert('Error', 'Please enter a valid IP address');
     }
