@@ -161,13 +161,6 @@ export default function History() {
             data={history}
             renderItem={renderHistoryItem}
             estimatedItemSize={100}
-            refreshControl={
-              <RefreshControl
-                refreshing={refreshing}
-                onRefresh={onRefresh}
-                tintColor="#4A90E2"
-              />
-            }
             contentContainerStyle={styles.listContent}
           />
         </View>
