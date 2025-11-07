@@ -207,7 +207,7 @@ export default function Home() {
         '✅ Oxygen Level Recorded',
         `Real pulse oximeter reading from ESP32!\n\nOxygen Level: ${oxygenReading}%`
       );
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error fetching oxygen level from ESP32:', error);
       Alert.alert(
         'ESP32 Connection Error',
