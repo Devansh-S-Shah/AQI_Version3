@@ -169,8 +169,26 @@ export default function Home() {
   const handleRecordOxygen = async () => {
     setLoading('oxygen');
     try {
-      // Use mock oxygen level for demonstration (ESP32 pulse oximeter would provide real data)
-      const oxygenReading = 96;
+      console.log('Fetching oxygen level from ESP32:', esp32IP);
+      
+      // Fetch oxygen level from ESP32 pulse oximeter
+      const esp32Response = await fetch(`http://${esp32IP}/oxygen-level`, {
+        method: 'GET',
+        headers: {
+          'Accept': 'application/json',
+        },
+      });
+      
+      console.log('ESP32 oxygen response status:', esp32Response.status);
+      
+      if (!esp32Response.ok) {
+        throw new Error(`ESP32 returned status ${esp32Response.status}`);
+      }
+      
+      const data = await esp32Response.json();
+      const oxygenReading = data.oxygenLevel;
+      
+      console.log('Received oxygen level:', oxygenReading);
       
       // Set the oxygen level to display on screen
       setOxygenLevel(oxygenReading);
@@ -186,12 +204,15 @@ export default function Home() {
       });
       
       Alert.alert(
-        'Oxygen Level Recorded',
-        `Pulse oximeter reading saved successfully!\n\nOxygen Level: ${oxygenReading}%`
+        '✅ Oxygen Level Recorded',
+        `Real pulse oximeter reading from ESP32!\n\nOxygen Level: ${oxygenReading}%`
       );
     } catch (error) {
-      console.error('Error recording oxygen level:', error);
-      Alert.alert('Error', 'Failed to record oxygen level. Please try again.');
+      console.error('Error fetching oxygen level from ESP32:', error);
+      Alert.alert(
+        'ESP32 Connection Error',
+        `Failed to connect to ESP32 at ${esp32IP}\n\nError: ${error.message}\n\nPlease check:\n1. ESP32 is powered on\n2. Same WiFi network\n3. Correct IP in Settings`
+      );
     } finally {
       setLoading(null);
     }
