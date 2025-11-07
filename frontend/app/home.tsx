@@ -38,20 +38,32 @@ export default function Home() {
   const handleCalculateAQI = async () => {
     setLoading('aqi');
     try {
-      // Use mock data for demonstration (ESP32 would provide real data)
-      const mockData = {
-        co: 12.5,
-        hazardousGas: 150,
-        temperature: 25.5,
-        humidity: 60,
-        airQuality: 180,
-        pm10: 45,
-        timestamp: new Date().toISOString(),
-      };
+      console.log('Fetching data from ESP32:', esp32IP);
       
-      const result = calculateAQI(mockData);
+      // Fetch real data from ESP32
+      const esp32Response = await fetch(`http://${esp32IP}/sensor-data`, {
+        method: 'GET',
+        headers: {
+          'Accept': 'application/json',
+        },
+      });
+      
+      console.log('ESP32 response status:', esp32Response.status);
+      
+      if (!esp32Response.ok) {
+        throw new Error(`ESP32 returned status ${esp32Response.status}`);
+      }
+      
+      const sensorData = await esp32Response.json();
+      console.log('Received sensor data:', sensorData);
+      
+      // Add timestamp
+      sensorData.timestamp = new Date().toISOString();
+      
+      // Calculate AQI from real sensor data
+      const result = calculateAQI(sensorData);
       setAqiResult(result);
-      setSensorReadings(mockData);
+      setSensorReadings(sensorData);
       
       // Save to backend
       await fetch(`${EXPO_PUBLIC_BACKEND_URL}/api/sensor-data`, {
@@ -59,16 +71,22 @@ export default function Home() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           userId: user?.id,
-          readings: mockData,
+          readings: sensorData,
           aqi: result.aqi,
           location: { latitude: 0, longitude: 0 },
         }),
       });
       
-      Alert.alert('AQI Calculated Successfully', `${result.message}\n\nAQI: ${result.aqi}\n\nSensor readings are now displayed below.`);
+      Alert.alert(
+        '✅ AQI Calculated!', 
+        `${result.message}\n\nAQI: ${result.aqi}\n\nReal sensor data from ESP32 displayed below.`
+      );
     } catch (error) {
-      console.error('Error calculating AQI:', error);
-      Alert.alert('Error', 'Failed to calculate AQI. Please try again.');
+      console.error('Error fetching from ESP32:', error);
+      Alert.alert(
+        'ESP32 Connection Error', 
+        `Failed to connect to ESP32 at ${esp32IP}\n\nError: ${error.message}\n\nPlease check:\n1. ESP32 is powered on\n2. Same WiFi network\n3. Correct IP in Settings`
+      );
     } finally {
       setLoading(null);
     }
