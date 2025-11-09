@@ -254,4 +254,9 @@ const styles = StyleSheet.create({
     color: '#4A90E2',
     fontSize: 14,
   },
+  loadingText: {
+    color: '#888',
+    marginTop: 16,
+    fontSize: 16,
+  },
 });
