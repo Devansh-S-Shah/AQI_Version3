@@ -65,18 +65,29 @@ export default function Home() {
       setAqiResult(result);
       setSensorReadings(sensorData);
       
-      // Save to backend
-      await fetch(`${EXPO_PUBLIC_BACKEND_URL}/api/sensor-data`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          userId: user?.id,
-          readings: sensorData,
-          aqi: result.aqi,
-          location: { latitude: 0, longitude: 0 },
-        }),
-      });
+      // Save to backend (don't block on this - just log if it fails)
+      try {
+        const backendResponse = await fetch(`${EXPO_PUBLIC_BACKEND_URL}/api/sensor-data`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            userId: user?.id,
+            readings: sensorData,
+            aqi: result.aqi,
+            location: { latitude: 0, longitude: 0 },
+          }),
+        });
+        
+        if (backendResponse.ok) {
+          console.log('✅ Data saved to backend successfully');
+        } else {
+          console.warn('⚠️ Failed to save to backend:', backendResponse.status);
+        }
+      } catch (backendError) {
+        console.warn('⚠️ Backend save error (non-critical):', backendError);
+      }
       
+      // Show success message
       Alert.alert(
         '✅ AQI Calculated!', 
         `${result.message}\n\nAQI: ${result.aqi}\n\nReal sensor data from ESP32 displayed below.`
