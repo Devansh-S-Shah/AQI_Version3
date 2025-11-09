@@ -28,10 +28,31 @@ export default function Index() {
   const { isAuthenticated, login, isLoading } = useAuthStore();
 
   useEffect(() => {
+    // Only redirect if authenticated AND not currently on login page
     if (isAuthenticated && !isLoading) {
       router.replace('/home');
     }
   }, [isAuthenticated, isLoading]);
+
+  // If still loading auth state, show loading screen
+  if (isLoading) {
+    return (
+      <View style={styles.container}>
+        <ActivityIndicator size="large" color="#4A90E2" />
+        <Text style={styles.loadingText}>Loading...</Text>
+      </View>
+    );
+  }
+
+  // If already authenticated, redirect will happen via useEffect
+  // But we show the form briefly to avoid flash
+  if (isAuthenticated) {
+    return (
+      <View style={styles.container}>
+        <ActivityIndicator size="large" color="#4A90E2" />
+      </View>
+    );
+  }
 
   const handleAuth = async () => {
     if (!username || !password) {
