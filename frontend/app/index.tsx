@@ -18,6 +18,8 @@ import { StatusBar } from 'expo-status-bar';
 const EXPO_PUBLIC_BACKEND_URL = process.env.EXPO_PUBLIC_BACKEND_URL;
 
 export default function Index() {
+  // Debug logging
+  console.log('🔍 Backend URL being used:', EXPO_PUBLIC_BACKEND_URL);
   const [isLogin, setIsLogin] = useState(true);
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
