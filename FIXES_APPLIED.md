@@ -4,6 +4,23 @@
 
 ## Summary of Issues Fixed
 
+### ✅ Issue 4: Network Error on Signup (Android Emulator)
+**Problem:** When trying to sign up or log in on Android Emulator, getting "Network Error" / "Auth Error".
+
+**Root Cause:** Frontend `.env` was pointing to Emergent platform URL (`https://clearbreathe-app.preview.emergentagent.com`) but backend is running locally on Mac at `localhost:8001`.
+
+**Solution Applied:**
+- Updated `EXPO_PUBLIC_BACKEND_URL` in `/app/frontend/.env` to use `http://10.0.2.2:8001`
+- `10.0.2.2` is the special IP address that Android Emulator uses to access the host machine's localhost
+- Restarted Expo frontend to apply the new environment variable
+
+**Files Modified:**
+- `/app/frontend/.env` - Updated backend URL for Android Emulator local development
+
+---
+
+## Summary of Issues Fixed
+
 ### ✅ Issue 1: Sign in/Sign up Page Not Appearing
 **Problem:** Once a user logged in, they couldn't see the login page again even after app restart.
 
