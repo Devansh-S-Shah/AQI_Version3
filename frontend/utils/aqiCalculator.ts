@@ -5,6 +5,7 @@ interface SensorReadings {
   humidity: number;
   airQuality: number;
   pm10: number;
+  pm25?: number;  // Optional PM2.5 sensor
 }
 
 interface AQIResult {
