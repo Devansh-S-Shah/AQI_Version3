@@ -1,0 +1,91 @@
+========================================
+QUICK FIX: Network Error on Local Mac
+========================================
+
+PROBLEM: "Network Error" when trying to sign up
+
+REASON: Frontend is trying to connect to Emergent platform, 
+        but your backend is running locally on Mac
+
+FIX (2 minutes):
+========================================
+
+Step 1: Open this file in your downloaded project
+----------------------------------------
+frontend/.env
+
+
+Step 2: Find this line
+----------------------------------------
+EXPO_PUBLIC_BACKEND_URL=https://clearbreathe-app.preview.emergentagent.com
+
+
+Step 3: Change it to
+----------------------------------------
+EXPO_PUBLIC_BACKEND_URL=http://10.0.2.2:8001
+
+
+Step 4: Save the file
+
+
+Step 5: Restart frontend
+----------------------------------------
+# In terminal, stop frontend (Ctrl+C)
+cd frontend
+npx expo start
+
+
+Step 6: Reload app on Android Emulator
+----------------------------------------
+Option A: Press Ctrl+M (or Cmd+M), tap "Reload"
+Option B: Close app completely and reopen
+
+
+Step 7: Try signup again
+----------------------------------------
+Should work now!
+
+
+========================================
+VERIFICATION:
+========================================
+
+1. Backend terminal should show:
+   "✅ ML Cough Classifier loaded successfully!"
+
+2. Frontend Metro bundler should show:
+   "🔍 Backend URL being used: http://10.0.2.2:8001"
+
+3. When you sign up:
+   Backend should log: "User registered: [username]"
+
+
+========================================
+STILL NOT WORKING?
+========================================
+
+Check:
+1. Backend is running on port 8001
+   Command: lsof -i :8001
+   
+2. Test backend directly:
+   Command: curl http://localhost:8001/api/health
+   Should return JSON with "status":"healthy"
+
+3. Frontend restarted after .env change
+
+4. App reloaded on emulator (not just refreshed)
+
+
+========================================
+WHY 10.0.2.2?
+========================================
+
+Android Emulator uses 10.0.2.2 as a special IP 
+to access your Mac's localhost (127.0.0.1)
+
+If using physical device on same WiFi:
+Use your Mac's actual IP (like 192.168.1.100)
+
+
+========================================
