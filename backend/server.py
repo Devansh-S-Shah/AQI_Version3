@@ -215,30 +215,77 @@ async def get_sensor_data(user_id: str):
 
 @api_router.post("/cough-record")
 async def save_cough_record(data: CoughRecordCreate):
-    """Save cough recording and analysis"""
+    """Save cough recording and perform ML analysis"""
+    import base64
+    import tempfile
+    
+    severity = 'unknown'
+    diagnosis = 'No analysis available'
+    confidence = 0.0
+    
     try:
+        # Decode audio and run ML prediction
+        if data.audioData and cough_classifier:
+            try:
+                # Decode base64 audio
+                audio_bytes = base64.b64decode(data.audioData)
+                
+                # Save to temporary file
+                with tempfile.NamedTemporaryFile(delete=False, suffix='.wav') as temp_file:
+                    temp_file.write(audio_bytes)
+                    temp_path = temp_file.name
+                
+                # Run ML Prediction
+                prediction = cough_classifier.predict(temp_path)
+                severity = prediction['severity']
+                confidence = prediction['confidence']
+                
+                # Build diagnosis message
+                diagnosis = f"ML Analysis: {severity}"
+                if prediction.get('is_dummy_model'):
+                    diagnosis += " (⚠️ DUMMY MODEL - Random prediction for testing)"
+                else:
+                    diagnosis += f" (Confidence: {confidence:.1%})"
+                
+                # Clean up temp file
+                import os
+                os.unlink(temp_path)
+                
+                logger.info(f"ML prediction: {severity} (confidence: {confidence:.2%})")
+                
+            except Exception as e:
+                logger.error(f"ML prediction error: {e}")
+                severity = data.severity or 'error'
+                diagnosis = f"Analysis failed: {str(e)}"
+        else:
+            # No ML model or no audio data
+            severity = data.severity or 'unknown'
+            diagnosis = data.diagnosis or 'No ML analysis available'
+        
+        # Save record
         record = {
             'id': str(uuid.uuid4()),
             'userId': data.userId,
-            'audioData': data.audioData,
-            'severity': data.severity,
-            'coughType': data.coughType,
-            'diagnosis': data.diagnosis,
+            'audioData': None,  # Don't store full audio in memory
+            'severity': severity,
+            'coughType': data.coughType or 'dry',
+            'diagnosis': diagnosis,
+            'confidence': confidence,
             'timestamp': datetime.utcnow().isoformat()
         }
         
         cough_records_db.append(record)
         
-        logger.info(f"Cough record saved for user: {data.userId}, Severity: {data.severity}")
+        logger.info(f"Cough record saved: {severity} for user {data.userId}")
         
         return {
             'success': True,
-            'message': 'Cough record saved successfully',
+            'message': 'Cough analysis complete',
             'data': record
         }
     except Exception as e:
         logger.error(f"Error saving cough record: {str(e)}")
-        raise HTTPException(status_code=500, detail="Failed to save cough record")
+        raise HTTPException(status_code=500, detail=str(e))
 
 @api_router.get("/cough-records/{user_id}")
 async def get_cough_records(user_id: str):
