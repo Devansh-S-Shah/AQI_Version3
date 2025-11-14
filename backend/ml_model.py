@@ -51,6 +51,98 @@ class CoughClassifier:
             logger.error(f"Failed to load ML model: {e}")
             raise
     
+    def extract_comprehensive_features(self, audio, sr):
+        """Extract 137 comprehensive acoustic features"""
+        from scipy.stats import kurtosis, skew
+        
+        n_mfcc = 20
+        n_mels = 128
+        
+        # 1. MFCCs and derivatives (80 features)
+        mfccs = librosa.feature.mfcc(y=audio, sr=sr, n_mfcc=n_mfcc)
+        mfccs_delta = librosa.feature.delta(mfccs)
+        mfccs_delta2 = librosa.feature.delta(mfccs, order=2)
+        
+        # 2. Spectral features (28 features)
+        spectral_centroid = librosa.feature.spectral_centroid(y=audio, sr=sr)
+        spectral_bandwidth = librosa.feature.spectral_bandwidth(y=audio, sr=sr)
+        spectral_contrast = librosa.feature.spectral_contrast(y=audio, sr=sr)
+        spectral_rolloff = librosa.feature.spectral_rolloff(y=audio, sr=sr)
+        spectral_flatness = librosa.feature.spectral_flatness(y=audio)
+        
+        # 3. Zero-crossing rate (4 features)
+        zcr = librosa.feature.zero_crossing_rate(audio)
+        
+        # 4. Chroma features (24 features)
+        chroma_stft = librosa.feature.chroma_stft(y=audio, sr=sr)
+        chroma_cqt = librosa.feature.chroma_cqt(y=audio, sr=sr)
+        
+        # 5. Energy features (5 features)
+        rms = librosa.feature.rms(y=audio)
+        energy = np.sum(audio ** 2) / len(audio)
+        log_energy = np.log(energy + 1e-10)
+        
+        # 6. Pitch features (2 features)
+        try:
+            pitches, magnitudes = librosa.piptrack(y=audio, sr=sr)
+            pitch_mean = np.mean(pitches[pitches > 0]) if np.any(pitches > 0) else 0
+            pitch_std = np.std(pitches[pitches > 0]) if np.any(pitches > 0) else 0
+        except:
+            pitch_mean = 0
+            pitch_std = 0
+        
+        # 7. Higher-order statistics (2 features)
+        audio_kurtosis = kurtosis(audio)
+        audio_skewness = skew(audio)
+        
+        # 8. Formant frequencies (4 features)
+        try:
+            lpc_order = 12
+            a = librosa.lpc(audio, order=lpc_order)
+            roots = np.roots(a)
+            roots = roots[np.imag(roots) >= 0]
+            formants = sorted(np.angle(roots) * (sr / (2 * np.pi)))[:4]
+            while len(formants) < 4:
+                formants.append(0)
+        except:
+            formants = [0, 0, 0, 0]
+        
+        # 9. Temporal features (1 feature)
+        temporal_centroid = np.sum(np.arange(len(audio)) * np.abs(audio)) / (np.sum(np.abs(audio)) + 1e-10)
+        
+        # Compute statistics for time-varying features
+        def compute_stats(feature):
+            return np.array([
+                np.mean(feature),
+                np.std(feature),
+                np.max(feature),
+                np.min(feature)
+            ])
+        
+        # Combine all features (137 total)
+        feature_vector = np.concatenate([
+            np.mean(mfccs, axis=1),  # 20
+            np.std(mfccs, axis=1),  # 20
+            np.mean(mfccs_delta, axis=1),  # 20
+            np.mean(mfccs_delta2, axis=1),  # 20
+            compute_stats(spectral_centroid),  # 4
+            compute_stats(spectral_bandwidth),  # 4
+            compute_stats(spectral_rolloff),  # 4
+            compute_stats(spectral_flatness),  # 4
+            np.mean(spectral_contrast, axis=1),  # 7
+            np.mean(chroma_stft, axis=1),  # 12
+            np.mean(chroma_cqt, axis=1),  # 12
+            compute_stats(zcr),  # 4
+            compute_stats(rms),  # 4
+            np.array([log_energy]),  # 1
+            np.array([pitch_mean, pitch_std]),  # 2
+            np.array([audio_kurtosis, audio_skewness]),  # 2
+            np.array(formants),  # 4
+            np.array([temporal_centroid])  # 1
+        ])
+        
+        return feature_vector
+    
     def preprocess_audio(self, audio_path):
         """
         Preprocess audio file for model input
@@ -59,23 +151,22 @@ class CoughClassifier:
             audio_path: Path to audio file
             
         Returns:
-            Preprocessed mel spectrogram ready for inference
+            Preprocessed features ready for inference
         """
         try:
             # Get config parameters
             target_sr = self.config.get('target_sr', 22050)
             duration = self.config.get('duration', 10)
-            n_mels = self.config.get('n_mels', 128)
-            n_fft = self.config.get('n_fft', 2048)
-            hop_length = self.config.get('hop_length', 512)
+            
+            # Check if model expects features or spectrogram
+            expected_shape = self.input_details[0]['shape']
+            num_dims = len(expected_shape)
+            
+            logger.info(f"Model expects {num_dims}D input with shape: {expected_shape}")
             
             # Load audio
             audio, sr = librosa.load(audio_path, sr=target_sr, duration=duration)
-            
-            # Normalize
             audio = librosa.util.normalize(audio)
-            
-            # Trim silence
             audio, _ = librosa.effects.trim(audio, top_db=20)
             
             # Pad or truncate to fixed length
@@ -85,39 +176,55 @@ class CoughClassifier:
             else:
                 audio = audio[:target_length]
             
-            # Extract mel spectrogram
-            mel_spec = librosa.feature.melspectrogram(
-                y=audio,
-                sr=sr,
-                n_mels=n_mels,
-                n_fft=n_fft,
-                hop_length=hop_length
-            )
-            
-            # Convert to log scale (dB)
-            mel_spec_db = librosa.power_to_db(mel_spec, ref=np.max)
-            
-            # Normalize
-            mel_spec_db = (mel_spec_db - mel_spec_db.mean()) / (mel_spec_db.std() + 1e-6)
-            
-            # Get expected input shape from model
-            expected_shape = self.input_details[0]['shape']
-            expected_time_steps = expected_shape[2]  # Usually 216
-            
-            # Resize time dimension if needed
-            if mel_spec_db.shape[1] != expected_time_steps:
-                from scipy.ndimage import zoom
-                zoom_factor = expected_time_steps / mel_spec_db.shape[1]
-                mel_spec_db = zoom(mel_spec_db, (1, zoom_factor), order=1)
-                logger.info(f"Resized spectrogram from {mel_spec.shape[1]} to {mel_spec_db.shape[1]} time steps")
-            
-            # Add dimensions for model input [batch, height, width, channels]
-            mel_spec_db = np.expand_dims(mel_spec_db, axis=-1)  # Add channel dim
-            mel_spec_db = np.expand_dims(mel_spec_db, axis=0)   # Add batch dim
-            
-            logger.info(f"Preprocessed audio shape: {mel_spec_db.shape}")
-            
-            return mel_spec_db.astype(np.float32)
+            # Extract features based on model type
+            if num_dims == 2:
+                # Enhanced features model (batch, features)
+                logger.info("Extracting enhanced features (137 features)")
+                feature_vector = self.extract_comprehensive_features(audio, sr)
+                
+                # Load scaler if available
+                scaler_path = self.config.get('scaler_path', 'models/feature_scaler.pkl')
+                try:
+                    import joblib
+                    if os.path.exists(scaler_path):
+                        scaler = joblib.load(scaler_path)
+                        feature_vector = scaler.transform(feature_vector.reshape(1, -1))
+                        logger.info("Applied feature scaling")
+                    else:
+                        # Normalize manually if no scaler
+                        feature_vector = (feature_vector - feature_vector.mean()) / (feature_vector.std() + 1e-6)
+                        feature_vector = feature_vector.reshape(1, -1)
+                except:
+                    feature_vector = feature_vector.reshape(1, -1)
+                
+                logger.info(f"Preprocessed features shape: {feature_vector.shape}")
+                return feature_vector.astype(np.float32)
+                
+            else:
+                # Mel spectrogram model (batch, height, width, channels)
+                logger.info("Extracting mel spectrogram")
+                n_mels = self.config.get('n_mels', 128)
+                n_fft = self.config.get('n_fft', 2048)
+                hop_length = self.config.get('hop_length', 512)
+                
+                mel_spec = librosa.feature.melspectrogram(
+                    y=audio, sr=sr, n_mels=n_mels, n_fft=n_fft, hop_length=hop_length
+                )
+                mel_spec_db = librosa.power_to_db(mel_spec, ref=np.max)
+                mel_spec_db = (mel_spec_db - mel_spec_db.mean()) / (mel_spec_db.std() + 1e-6)
+                
+                # Resize to match expected shape
+                expected_time_steps = expected_shape[2]
+                if mel_spec_db.shape[1] != expected_time_steps:
+                    from scipy.ndimage import zoom
+                    zoom_factor = expected_time_steps / mel_spec_db.shape[1]
+                    mel_spec_db = zoom(mel_spec_db, (1, zoom_factor), order=1)
+                
+                mel_spec_db = np.expand_dims(mel_spec_db, axis=-1)
+                mel_spec_db = np.expand_dims(mel_spec_db, axis=0)
+                
+                logger.info(f"Preprocessed spectrogram shape: {mel_spec_db.shape}")
+                return mel_spec_db.astype(np.float32)
             
         except Exception as e:
             logger.error(f"Error preprocessing audio: {e}")
