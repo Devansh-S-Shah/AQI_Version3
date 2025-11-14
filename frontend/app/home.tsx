@@ -167,15 +167,16 @@ export default function Home() {
   };
 
   const saveCoughRecording = async () => {
-    if (!recording) {
-      Alert.alert('Error', 'No recording to save');
+    if (!recording || isSaving) {
+      if (!recording) Alert.alert('Error', 'No recording to save');
       return;
     }
 
-    // Save the recording reference and clear state immediately to prevent double unload
+    // Set flag to prevent double processing
+    setIsSaving(true);
+    
+    // Save the recording reference
     const recordingToSave = recording;
-    setRecording(null);
-    setIsRecording(false);
 
     try {
       // Get URI before unloading
@@ -183,6 +184,7 @@ export default function Home() {
       
       if (!uri) {
         Alert.alert('Error', 'No audio URI available');
+        setIsSaving(false);
         setCoughModalVisible(false);
         return;
       }
@@ -191,6 +193,11 @@ export default function Home() {
       
       // Stop and unload the recording
       await recordingToSave.stopAndUnloadAsync();
+      
+      // Clear recording state after successful unload
+      setRecording(null);
+      setIsRecording(false);
+      
       await Audio.setAudioModeAsync({
         allowsRecordingIOS: false,
       });
