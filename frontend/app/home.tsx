@@ -142,16 +142,22 @@ export default function Home() {
   };
 
   const stopRecording = async () => {
-    if (!recording) return;
+    if (!recording) return null;
     
     try {
       setIsRecording(false);
+      
+      // Get URI before unloading
+      const uri = recording.getURI();
+      console.log('Recording URI:', uri);
+      
+      // Now unload the recording
       await recording.stopAndUnloadAsync();
       await Audio.setAudioModeAsync({
         allowsRecordingIOS: false,
       });
-      const uri = recording.getURI();
-      console.log('Recording saved to:', uri);
+      
+      console.log('Recording stopped and unloaded successfully');
       return uri;
     } catch (error) {
       console.error('Error stopping recording:', error);
