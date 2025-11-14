@@ -14,6 +14,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { Ionicons } from '@expo/vector-icons';
 import { Audio } from 'expo-av';
+import * as FileSystem from 'expo-file-system';
 import { useAuthStore } from '../store/authStore';
 import { useESP32Store } from '../store/esp32Store';
 import { calculateAQI, getHealthRecommendation } from '../utils/aqiCalculator';
