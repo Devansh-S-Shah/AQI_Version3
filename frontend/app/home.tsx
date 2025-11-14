@@ -158,29 +158,53 @@ export default function Home() {
     try {
       await stopRecording();
       
-      // Save to backend (placeholder for ML analysis)
-      await fetch(`${EXPO_PUBLIC_BACKEND_URL}/api/cough-record`, {
+      // Get audio URI
+      const uri = recording.getURI();
+      
+      if (!uri) {
+        Alert.alert('Error', 'No audio URI available');
+        return;
+      }
+
+      console.log('Reading audio file from:', uri);
+      
+      // Convert to base64
+      const base64Audio = await FileSystem.readAsStringAsync(uri, {
+        encoding: FileSystem.EncodingType.Base64,
+      });
+      
+      console.log(`Audio converted to base64: ${base64Audio.length} characters`);
+      
+      // Save to backend with real audio data
+      const response = await fetch(`${EXPO_PUBLIC_BACKEND_URL}/api/cough-record`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           userId: user?.id,
-          audioData: 'base64_audio_data_placeholder',
-          severity: 'moderate',
-          coughType: 'dry',
-          diagnosis: 'ML analysis placeholder - integrate TensorFlow Lite model',
+          audioData: base64Audio,  // Real base64 audio data
+          severity: 'unknown',  // Will be determined by ML
+          coughType: 'unknown',
+          diagnosis: 'Processing...',
         }),
       });
 
-      Alert.alert(
-        'Cough Recorded Successfully',
-        'Recording saved. ML analysis will be available after model integration.'
-      );
+      const result = await response.json();
+      console.log('Backend response:', result);
+
+      if (result.success) {
+        Alert.alert(
+          '✅ Cough Analysis Complete',
+          result.data.diagnosis || 'Analysis complete'
+        );
+      } else {
+        Alert.alert('Error', 'Failed to analyze cough');
+      }
       
       setCoughModalVisible(false);
       setRecording(null);
     } catch (error) {
       console.error('Error saving cough recording:', error);
-      Alert.alert('Error', 'Failed to save cough recording');
+      Alert.alert('Error', `Failed to save cough recording: ${error}`);
     }
   };
 
