@@ -171,16 +171,30 @@ export default function Home() {
       return;
     }
 
+    // Save the recording reference and clear state immediately to prevent double unload
+    const recordingToSave = recording;
+    setRecording(null);
+    setIsRecording(false);
+
     try {
-      // Stop recording and get URI
-      const uri = await stopRecording();
+      // Get URI before unloading
+      const uri = recordingToSave.getURI();
       
       if (!uri) {
         Alert.alert('Error', 'No audio URI available');
+        setCoughModalVisible(false);
         return;
       }
 
       console.log('Reading audio file from:', uri);
+      
+      // Stop and unload the recording
+      await recordingToSave.stopAndUnloadAsync();
+      await Audio.setAudioModeAsync({
+        allowsRecordingIOS: false,
+      });
+      
+      console.log('Recording stopped successfully');
       
       // Check if file exists
       const fileInfo = await FileSystem.getInfoAsync(uri);
@@ -188,6 +202,7 @@ export default function Home() {
       
       if (!fileInfo.exists) {
         Alert.alert('Error', 'Audio file not found');
+        setCoughModalVisible(false);
         return;
       }
       
@@ -224,10 +239,10 @@ export default function Home() {
       }
       
       setCoughModalVisible(false);
-      setRecording(null);
     } catch (error) {
       console.error('Error saving cough recording:', error);
       Alert.alert('Error', `Failed to save cough recording: ${error}`);
+      setCoughModalVisible(false);
     }
   };
 
