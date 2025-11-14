@@ -166,10 +166,8 @@ export default function Home() {
     }
 
     try {
-      await stopRecording();
-      
-      // Get audio URI
-      const uri = recording.getURI();
+      // Stop recording and get URI
+      const uri = await stopRecording();
       
       if (!uri) {
         Alert.alert('Error', 'No audio URI available');
@@ -177,6 +175,10 @@ export default function Home() {
       }
 
       console.log('Reading audio file from:', uri);
+      
+      // Check if file exists
+      const fileInfo = await FileSystem.getInfoAsync(uri);
+      console.log('Audio file info:', fileInfo);
       
       // Convert to base64
       const base64Audio = await FileSystem.readAsStringAsync(uri, {
