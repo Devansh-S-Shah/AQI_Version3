@@ -1,0 +1,23 @@
+{
+  "label_mapping": {
+    "0": "Healthy",
+    "1": "Mild",
+    "2": "Severe"
+  },
+  "input_shape": [
+    128,
+    216,
+    1
+  ],
+  "target_sr": 22050,
+  "duration": 10,
+  "n_mels": 128,
+  "n_fft": 2048,
+  "hop_length": 512,
+  "test_accuracy": 0.0,
+  "test_precision": 0.0,
+  "test_recall": 0.0,
+  "model_size_mb": 1.6935653686523438,
+  "is_dummy": true,
+  "note": "This is a DUMMY model for testing integration only. Predictions are random!"
+}
