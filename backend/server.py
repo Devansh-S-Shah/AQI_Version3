@@ -227,13 +227,27 @@ async def save_cough_record(data: CoughRecordCreate):
         # Decode audio and run ML prediction
         if data.audioData and cough_classifier:
             try:
-                # Decode base64 audio
-                audio_bytes = base64.b64decode(data.audioData)
+                # Clean and decode base64 audio
+                # Remove data URI prefix if present (e.g., "data:audio/wav;base64,")
+                audio_data = data.audioData
+                if ',' in audio_data:
+                    audio_data = audio_data.split(',')[1]
                 
-                # Save to temporary file
-                with tempfile.NamedTemporaryFile(delete=False, suffix='.wav') as temp_file:
+                # Add padding if needed
+                missing_padding = len(audio_data) % 4
+                if missing_padding:
+                    audio_data += '=' * (4 - missing_padding)
+                
+                # Decode base64
+                audio_bytes = base64.b64decode(audio_data)
+                logger.info(f"Decoded audio: {len(audio_bytes)} bytes")
+                
+                # Save to temporary file with proper audio format
+                with tempfile.NamedTemporaryFile(delete=False, suffix='.wav', mode='wb') as temp_file:
                     temp_file.write(audio_bytes)
                     temp_path = temp_file.name
+                
+                logger.info(f"Saved temp audio file: {temp_path}")
                 
                 # Run ML Prediction
                 prediction = cough_classifier.predict(temp_path)
@@ -251,10 +265,12 @@ async def save_cough_record(data: CoughRecordCreate):
                 import os
                 os.unlink(temp_path)
                 
-                logger.info(f"ML prediction: {severity} (confidence: {confidence:.2%})")
+                logger.info(f"✅ ML prediction: {severity} (confidence: {confidence:.2%})")
                 
             except Exception as e:
+                import traceback
                 logger.error(f"ML prediction error: {e}")
+                logger.error(f"Traceback: {traceback.format_exc()}")
                 severity = data.severity or 'error'
                 diagnosis = f"Analysis failed: {str(e)}"
         else:
