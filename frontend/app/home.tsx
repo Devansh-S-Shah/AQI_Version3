@@ -35,6 +35,7 @@ export default function Home() {
   const [coughModalVisible, setCoughModalVisible] = useState(false);
   const [recording, setRecording] = useState<Audio.Recording | null>(null);
   const [isRecording, setIsRecording] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
 
   const handleCalculateAQI = async () => {
     setLoading('aqi');
