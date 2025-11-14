@@ -247,10 +247,12 @@ export default function Home() {
       }
       
       setCoughModalVisible(false);
+      setIsSaving(false);
     } catch (error) {
       console.error('Error saving cough recording:', error);
       Alert.alert('Error', `Failed to save cough recording: ${error}`);
       setCoughModalVisible(false);
+      setIsSaving(false);
     }
   };
 
