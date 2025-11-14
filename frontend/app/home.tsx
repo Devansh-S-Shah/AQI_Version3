@@ -183,12 +183,17 @@ export default function Home() {
       console.log('Reading audio file from:', uri);
       
       // Check if file exists
-      const fileInfo = await FileSystem.getInfoAsync(uri);
+      const fileInfo = await getInfoAsync(uri);
       console.log('Audio file info:', fileInfo);
       
+      if (!fileInfo.exists) {
+        Alert.alert('Error', 'Audio file not found');
+        return;
+      }
+      
       // Convert to base64
-      const base64Audio = await FileSystem.readAsStringAsync(uri, {
-        encoding: FileSystem.EncodingType.Base64,
+      const base64Audio = await readAsStringAsync(uri, {
+        encoding: EncodingType.Base64,
       });
       
       console.log(`Audio converted to base64: ${base64Audio.length} characters`);
