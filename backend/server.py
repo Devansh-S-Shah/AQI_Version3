@@ -242,12 +242,17 @@ async def save_cough_record(data: CoughRecordCreate):
                 audio_bytes = base64.b64decode(audio_data)
                 logger.info(f"Decoded audio: {len(audio_bytes)} bytes")
                 
-                # Save to temporary file with proper audio format
-                with tempfile.NamedTemporaryFile(delete=False, suffix='.wav', mode='wb') as temp_file:
+                # Check if audio data is too small (likely invalid)
+                if len(audio_bytes) < 1000:  # Minimum reasonable audio size
+                    raise Exception(f"Audio data too small ({len(audio_bytes)} bytes). Recording might have failed.")
+                
+                # Save to temporary file (expo-av typically produces m4a/caf format)
+                # Try different extensions to help librosa identify format
+                with tempfile.NamedTemporaryFile(delete=False, suffix='.m4a', mode='wb') as temp_file:
                     temp_file.write(audio_bytes)
                     temp_path = temp_file.name
                 
-                logger.info(f"Saved temp audio file: {temp_path}")
+                logger.info(f"Saved temp audio file: {temp_path} ({len(audio_bytes)} bytes)")
                 
                 # Run ML Prediction
                 prediction = cough_classifier.predict(temp_path)
