@@ -36,6 +36,19 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
+# Initialize ML Model for Cough Classification
+cough_classifier = None
+try:
+    from ml_model import CoughClassifier
+    cough_classifier = CoughClassifier(
+        model_path='models/cough_classifier_dummy.tflite',
+        config_path='models/model_info_dummy.json'
+    )
+    logger.info("✅ ML Cough Classifier loaded successfully!")
+except Exception as e:
+    logger.warning(f"⚠️  ML model not loaded: {e}")
+    logger.warning("Cough analysis will use placeholder values")
+
 # In-memory storage (will be replaced with Firebase)
 # For now, we'll use simple dictionaries to store data
 users_db: Dict[str, Any] = {}
