@@ -100,6 +100,17 @@ class CoughClassifier:
             # Normalize
             mel_spec_db = (mel_spec_db - mel_spec_db.mean()) / (mel_spec_db.std() + 1e-6)
             
+            # Get expected input shape from model
+            expected_shape = self.input_details[0]['shape']
+            expected_time_steps = expected_shape[2]  # Usually 216
+            
+            # Resize time dimension if needed
+            if mel_spec_db.shape[1] != expected_time_steps:
+                from scipy.ndimage import zoom
+                zoom_factor = expected_time_steps / mel_spec_db.shape[1]
+                mel_spec_db = zoom(mel_spec_db, (1, zoom_factor), order=1)
+                logger.info(f"Resized spectrogram from {mel_spec.shape[1]} to {mel_spec_db.shape[1]} time steps")
+            
             # Add dimensions for model input [batch, height, width, channels]
             mel_spec_db = np.expand_dims(mel_spec_db, axis=-1)  # Add channel dim
             mel_spec_db = np.expand_dims(mel_spec_db, axis=0)   # Add batch dim
