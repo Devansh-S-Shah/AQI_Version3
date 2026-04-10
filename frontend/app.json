@@ -27,6 +27,7 @@
         "backgroundColor": "#0A0E27"
       },
       "edgeToEdgeEnabled": true,
+      "usesCleartextTraffic": true,
       "permissions": [
         "ACCESS_FINE_LOCATION",
         "ACCESS_COARSE_LOCATION",
@@ -61,7 +62,9 @@
         {
           "locationAlwaysAndWhenInUsePermission": "Allow AirQuality Monitor to use your location to show air quality data on the map."
         }
-      ]
+      ],
+      "expo-font",
+      "expo-web-browser"
     ],
     "experiments": {
       "typedRoutes": true

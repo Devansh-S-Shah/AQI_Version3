@@ -11,7 +11,7 @@ In your downloaded project, navigate to `frontend/.env` and change:
 
 **FROM:**
 ```
-EXPO_PUBLIC_BACKEND_URL=https://clearbreathe-app.preview.emergentagent.com
+EXPO_PUBLIC_BACKEND_URL=https://aqi-respiratory-app.preview.emergentagent.com
 ```
 
 **TO:**
@@ -21,8 +21,8 @@ EXPO_PUBLIC_BACKEND_URL=http://10.0.2.2:8001
 
 ### Complete `.env` File Should Look Like:
 ```
-EXPO_TUNNEL_SUBDOMAIN=clearbreathe-app
-EXPO_PACKAGER_HOSTNAME=https://clearbreathe-app.preview.emergentagent.com
+EXPO_TUNNEL_SUBDOMAIN=aqi-respiratory-app
+EXPO_PACKAGER_HOSTNAME=https://aqi-respiratory-app.preview.emergentagent.com
 EXPO_PUBLIC_BACKEND_URL=http://10.0.2.2:8001
 EXPO_USE_FAST_RESOLVER="1"
 METRO_CACHE_ROOT=/app/frontend/.metro-cache
@@ -84,7 +84,7 @@ Example: `192.168.1.100`
 
 **Frontend .env:**
 ```
-EXPO_PUBLIC_BACKEND_URL=https://clearbreathe-app.preview.emergentagent.com
+EXPO_PUBLIC_BACKEND_URL=https://aqi-respiratory-app.preview.emergentagent.com
 ```
 
 ---

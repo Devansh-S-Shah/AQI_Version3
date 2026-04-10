@@ -17,24 +17,39 @@ import { useESP32Store } from '../store/esp32Store';
 
 export default function Settings() {
   const router = useRouter();
-  const { esp32IP, setESP32IP } = useESP32Store();
+  const { esp32IP, setESP32IP, isIPLoaded } = useESP32Store();
   const [ipInput, setIpInput] = useState(esp32IP);
   const [notifications, setNotifications] = useState(true);
   const [autoSync, setAutoSync] = useState(true);
   const [darkMode, setDarkMode] = useState(true);
+  const [isSavingIP, setIsSavingIP] = useState(false);
 
-  const handleSaveIP = () => {
+  // Sync the input when the persisted IP loads from AsyncStorage
+  React.useEffect(() => {
+    if (isIPLoaded) {
+      setIpInput(esp32IP);
+    }
+  }, [isIPLoaded, esp32IP]);
+
+  const handleSaveIP = async () => {
     // Basic IP validation
     const ipRegex = /^(\d{1,3}\.){3}\d{1,3}$/;
-    if (ipRegex.test(ipInput)) {
-      console.log('Saving ESP32 IP:', ipInput);
-      setESP32IP(ipInput);
-      Alert.alert(
-        'Success', 
-        `ESP32 IP address saved successfully!\n\nIP: ${ipInput}\n\nPlease restart the app for changes to take effect.`
-      );
+    if (ipRegex.test(ipInput.trim())) {
+      setIsSavingIP(true);
+      try {
+        console.log('Saving ESP32 IP:', ipInput.trim());
+        await setESP32IP(ipInput.trim());
+        Alert.alert(
+          'Success', 
+          `ESP32 IP address saved!\n\nIP: ${ipInput.trim()}\n\nThe new IP will be used immediately for all ESP32 connections.`
+        );
+      } catch (error) {
+        Alert.alert('Error', 'Failed to save IP address. Please try again.');
+      } finally {
+        setIsSavingIP(false);
+      }
     } else {
-      Alert.alert('Error', 'Please enter a valid IP address');
+      Alert.alert('Error', 'Please enter a valid IP address (e.g., 192.168.1.100)');
     }
   };
 
@@ -61,6 +76,9 @@ export default function Settings() {
           
           <View style={styles.card}>
             <Text style={styles.label}>ESP32 IP Address</Text>
+            <Text style={styles.currentIPText}>
+              Currently saved: {esp32IP}
+            </Text>
             <TextInput
               style={styles.input}
               placeholder="192.168.1.100"
@@ -70,15 +88,47 @@ export default function Settings() {
               keyboardType="numeric"
             />
             <TouchableOpacity
-              style={styles.saveButton}
+              style={[styles.saveButton, isSavingIP && { opacity: 0.6 }]}
               onPress={handleSaveIP}
+              disabled={isSavingIP}
             >
-              <Text style={styles.saveButtonText}>Save IP Address</Text>
+              <Text style={styles.saveButtonText}>
+                {isSavingIP ? 'Saving...' : 'Save IP Address'}
+              </Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[styles.saveButton, { backgroundColor: '#00E400', marginTop: 8 }]}
+              onPress={async () => {
+                const ipToTest = ipInput.trim() || esp32IP;
+                try {
+                  Alert.alert('Testing...', `Connecting to ESP32 at ${ipToTest}...`);
+                  const controller = new AbortController();
+                  const timeoutId = setTimeout(() => controller.abort(), 5000);
+                  const response = await fetch(`http://${ipToTest}/sensor-data`, {
+                    signal: controller.signal,
+                  });
+                  clearTimeout(timeoutId);
+                  if (response.ok) {
+                    Alert.alert('✅ Connection Successful', `ESP32 at ${ipToTest} is reachable!`);
+                  } else {
+                    Alert.alert('⚠️ ESP32 Responded', `Status: ${response.status}. Device is reachable but returned an error.`);
+                  }
+                } catch (error: any) {
+                  Alert.alert(
+                    '❌ Connection Failed',
+                    `Could not reach ESP32 at ${ipToTest}\n\nError: ${error.message}\n\nCheck:\n1. ESP32 is powered on\n2. Phone & ESP32 on same WiFi\n3. IP address is correct`
+                  );
+                }
+              }}
+            >
+              <Text style={styles.saveButtonText}>Test Connection</Text>
             </TouchableOpacity>
             
             <Text style={styles.helpText}>
               Enter the IP address of your ESP32 device. You can find this in
               your ESP32's serial monitor or router's connected devices list.
+              The IP is now saved permanently and will persist across app restarts.
             </Text>
           </View>
         </View>
@@ -252,7 +302,13 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
     color: '#fff',
+    marginBottom: 4,
+  },
+  currentIPText: {
+    fontSize: 13,
+    color: '#4A90E2',
     marginBottom: 8,
+    fontStyle: 'italic',
   },
   input: {
     backgroundColor: '#0A0E27',

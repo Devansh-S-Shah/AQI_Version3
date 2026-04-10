@@ -1,13 +1,16 @@
 import { Stack } from 'expo-router';
 import { useEffect } from 'react';
 import { useAuthStore } from '../store/authStore';
+import { useESP32Store } from '../store/esp32Store';
 import { PaperProvider } from 'react-native-paper';
 
 export default function RootLayout() {
   const loadUser = useAuthStore((state) => state.loadUser);
+  const loadESP32IP = useESP32Store((state) => state.loadESP32IP);
 
   useEffect(() => {
     loadUser();
+    loadESP32IP();
   }, []);
 
   return (

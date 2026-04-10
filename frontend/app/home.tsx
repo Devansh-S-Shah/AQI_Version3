@@ -42,14 +42,19 @@ export default function Home() {
     try {
       console.log('Fetching data from ESP32:', esp32IP);
       
-      // Fetch real data from ESP32
+      // Fetch real data from ESP32 with a 5-second timeout
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 5000);
+      
       const esp32Response = await fetch(`http://${esp32IP}/sensor-data`, {
         method: 'GET',
         headers: {
           'Accept': 'application/json',
         },
+        signal: controller.signal,
       });
       
+      clearTimeout(timeoutId);
       console.log('ESP32 response status:', esp32Response.status);
       
       if (!esp32Response.ok) {
@@ -107,9 +112,10 @@ export default function Home() {
       );
     } catch (error: any) {
       console.error('Error fetching from ESP32:', error);
+      const isTimeout = error.name === 'AbortError';
       Alert.alert(
         'ESP32 Connection Error', 
-        `Failed to connect to ESP32 at ${esp32IP}\n\nError: ${error.message}\n\nPlease check:\n1. ESP32 is powered on\n2. Same WiFi network\n3. Correct IP in Settings`
+        `Failed to connect to ESP32 at ${esp32IP}\n\n${isTimeout ? 'Connection timed out (5s)' : `Error: ${error.message}`}\n\nPlease check:\n1. ESP32 is powered on\n2. Phone & ESP32 on same WiFi network\n3. Correct IP in Settings (currently: ${esp32IP})\n4. Try "Test Connection" in Settings first`
       );
     } finally {
       setLoading(null);
@@ -265,14 +271,19 @@ export default function Home() {
     try {
       console.log('Fetching oxygen level from ESP32:', esp32IP);
       
-      // Fetch oxygen level from ESP32 pulse oximeter
+      // Fetch oxygen level from ESP32 pulse oximeter with 5-second timeout
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 5000);
+      
       const esp32Response = await fetch(`http://${esp32IP}/oxygen-level`, {
         method: 'GET',
         headers: {
           'Accept': 'application/json',
         },
+        signal: controller.signal,
       });
       
+      clearTimeout(timeoutId);
       console.log('ESP32 oxygen response status:', esp32Response.status);
       
       if (!esp32Response.ok) {
@@ -303,9 +314,10 @@ export default function Home() {
       );
     } catch (error: any) {
       console.error('Error fetching oxygen level from ESP32:', error);
+      const isTimeout = error.name === 'AbortError';
       Alert.alert(
         'ESP32 Connection Error',
-        `Failed to connect to ESP32 at ${esp32IP}\n\nError: ${error.message}\n\nPlease check:\n1. ESP32 is powered on\n2. Same WiFi network\n3. Correct IP in Settings`
+        `Failed to connect to ESP32 at ${esp32IP}\n\n${isTimeout ? 'Connection timed out (5s)' : `Error: ${error.message}`}\n\nPlease check:\n1. ESP32 is powered on\n2. Phone & ESP32 on same WiFi network\n3. Correct IP in Settings (currently: ${esp32IP})\n4. Try "Test Connection" in Settings first`
       );
     } finally {
       setLoading(null);

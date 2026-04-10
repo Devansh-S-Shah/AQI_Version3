@@ -12,7 +12,7 @@ import sys
 import os
 
 # Backend URL from frontend environment
-BACKEND_URL = "https://clearbreathe-app.preview.emergentagent.com/api"
+BACKEND_URL = "https://aqi-respiratory-app.preview.emergentagent.com/api"
 
 # Test data
 TEST_USER = {

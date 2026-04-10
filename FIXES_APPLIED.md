@@ -7,7 +7,7 @@
 ### ✅ Issue 4: Network Error on Signup (Android Emulator)
 **Problem:** When trying to sign up or log in on Android Emulator, getting "Network Error" / "Auth Error".
 
-**Root Cause:** Frontend `.env` was pointing to Emergent platform URL (`https://clearbreathe-app.preview.emergentagent.com`) but backend is running locally on Mac at `localhost:8001`.
+**Root Cause:** Frontend `.env` was pointing to Emergent platform URL (`https://aqi-respiratory-app.preview.emergentagent.com`) but backend is running locally on Mac at `localhost:8001`.
 
 **Solution Applied:**
 - Updated `EXPO_PUBLIC_BACKEND_URL` in `/app/frontend/.env` to use `http://10.0.2.2:8001`

@@ -27,7 +27,7 @@
 | Android Emulator | `http://10.0.2.2:8001` | ✅ Current setup |
 | Physical Android Device | `http://YOUR_MAC_IP:8001` | If using real phone |
 | iOS Simulator | `http://localhost:8001` | If using iOS |
-| Emergent Platform | `https://clearbreathe-app.preview.emergentagent.com` | When deploying |
+| Emergent Platform | `https://aqi-respiratory-app.preview.emergentagent.com` | When deploying |
 
 ### Configuration Files
 

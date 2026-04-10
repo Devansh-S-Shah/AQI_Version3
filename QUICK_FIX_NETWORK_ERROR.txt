@@ -17,7 +17,7 @@ frontend/.env
 
 Step 2: Find this line
 ----------------------------------------
-EXPO_PUBLIC_BACKEND_URL=https://clearbreathe-app.preview.emergentagent.com
+EXPO_PUBLIC_BACKEND_URL=https://aqi-respiratory-app.preview.emergentagent.com
 
 
 Step 3: Change it to
