@@ -450,37 +450,37 @@ export default function Home() {
               <View style={styles.sensorItem}>
                 <Ionicons name="cloud-outline" size={24} color="#4A90E2" />
                 <Text style={styles.sensorLabel}>CO Level</Text>
-                <Text style={styles.sensorValue}>{sensorReadings.co} ppm</Text>
+                <Text style={styles.sensorValue}>{Number(sensorReadings.co).toFixed(2)} ppm</Text>
               </View>
               
               <View style={styles.sensorItem}>
                 <Ionicons name="warning-outline" size={24} color="#FF7E00" />
                 <Text style={styles.sensorLabel}>Hazardous Gas</Text>
-                <Text style={styles.sensorValue}>{sensorReadings.hazardousGas} ppm</Text>
+                <Text style={styles.sensorValue}>{Number(sensorReadings.hazardousGas).toFixed(2)} ppm</Text>
               </View>
               
               <View style={styles.sensorItem}>
                 <Ionicons name="thermometer-outline" size={24} color="#00E400" />
                 <Text style={styles.sensorLabel}>Temperature</Text>
-                <Text style={styles.sensorValue}>{sensorReadings.temperature}°C</Text>
+                <Text style={styles.sensorValue}>{Number(sensorReadings.temperature).toFixed(2)}°C</Text>
               </View>
               
               <View style={styles.sensorItem}>
                 <Ionicons name="water-outline" size={24} color="#4A90E2" />
                 <Text style={styles.sensorLabel}>Humidity</Text>
-                <Text style={styles.sensorValue}>{sensorReadings.humidity}%</Text>
+                <Text style={styles.sensorValue}>{Number(sensorReadings.humidity).toFixed(2)}%</Text>
               </View>
               
               <View style={styles.sensorItem}>
                 <Ionicons name="leaf-outline" size={24} color="#00E400" />
-                <Text style={styles.sensorLabel}>Air Quality</Text>
-                <Text style={styles.sensorValue}>{sensorReadings.airQuality}</Text>
+                <Text style={styles.sensorLabel}>PM2.5</Text>
+                <Text style={styles.sensorValue}>{Number(sensorReadings.pm25).toFixed(2)} µg/m³</Text>
               </View>
               
               <View style={styles.sensorItem}>
                 <Ionicons name="analytics-outline" size={24} color="#8F3F97" />
                 <Text style={styles.sensorLabel}>PM10</Text>
-                <Text style={styles.sensorValue}>{sensorReadings.pm10} µg/m³</Text>
+                <Text style={styles.sensorValue}>{Number(sensorReadings.pm10).toFixed(2)} µg/m³</Text>
               </View>
             </View>
           </View>
